@@ -1,0 +1,6 @@
+{
+  "name": "Coffee Tree Cafe - Modern Auth & Showcase",
+  "description": "Modern, minimalist artisanal cafe login and sign up pages with secure authentication, roast-tier password security, and interactive design showcase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
