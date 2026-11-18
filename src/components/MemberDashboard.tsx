@@ -36,7 +36,7 @@ export const MemberDashboard: React.FC<MemberDashboardProps> = ({
             Welcome, {user.fullName}
           </h1>
           <p className="text-xs text-emerald-200/70">
-            Authenticated via {user.email} · Member since {user.joinedDate}
+            Authenticated via {user.email}{user.city ? ` · ${user.city}` : ''} · Member since {user.joinedDate}
           </p>
         </div>
 
@@ -136,7 +136,7 @@ export const MemberDashboard: React.FC<MemberDashboardProps> = ({
             <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0" />
             <div>
               <span className="font-semibold text-slate-800">Device Recognized & Cryptographically Pinned</span>
-              <span className="block text-[11px] text-slate-500">Session protected with TLS 1.3 & client-side salted auth tokens.</span>
+              <span className="block text-[11px] text-slate-500">Session uses a revocable HTTP-only cookie. HTTPS is required in production.</span>
             </div>
           </div>
           <span className="px-2.5 py-1 rounded-full bg-emerald-100/80 text-emerald-900 font-semibold text-[10px] uppercase tracking-wider shrink-0">

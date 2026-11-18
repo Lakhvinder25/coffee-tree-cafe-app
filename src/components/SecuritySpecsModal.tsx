@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ShieldCheck, KeyRound, Lock, Smartphone, RefreshCw, EyeOff, Server, Check } from 'lucide-react';
+import { X, ShieldCheck, KeyRound, Lock, Smartphone, Server } from 'lucide-react';
 
 interface SecuritySpecsModalProps {
   isOpen: boolean;
@@ -14,32 +14,32 @@ export const SecuritySpecsModal: React.FC<SecuritySpecsModalProps> = ({
 
   const securityFeatures = [
     {
-      title: 'Roast-Tier Entropy Scoring',
-      desc: 'Client-side password evaluation requiring varied byte diversity (zxcvbn entropy standard) prevents dictionary attacks and common credential reuse.',
+      title: 'Password Strength Guidance',
+      desc: 'The signup screen provides a visual strength guide. The server requires passwords to be at least 8 characters.',
       icon: KeyRound,
-      tag: 'Cryptographic Rule',
+      tag: 'User Guidance',
     },
     {
-      title: 'Argon2id Salted Hashes',
-      desc: 'All stored credential records are salted with high-memory cost factors (64MB memory cost, 3 iterations) impervious to GPU cracking rigs.',
+      title: 'Scrypt Password Hashing',
+      desc: 'Passwords are stored as per-account salted scrypt hashes. Plaintext passwords are never saved.',
       icon: Lock,
-      tag: 'Storage Invariant',
+      tag: 'Credential Storage',
     },
     {
-      title: 'Hardware Biometrics & Passkeys',
-      desc: 'WebAuthn / FIDO2 Level 3 compliant device credential registration using Face ID, Touch ID, or hardware security keys.',
+      title: 'External Sign-in Providers',
+      desc: 'Google, Apple, and passkey sign-in are not configured. Email and password is the available sign-in method.',
       icon: Smartphone,
-      tag: 'FIDO2 / WebAuthn',
+      tag: 'Not Configured',
     },
     {
-      title: 'Session Pinning & Device Trust',
-      desc: 'The "Remember this device" feature binds cryptographically isolated refresh tokens to TLS client fingerprints, preventing token hijacking.',
+      title: 'Server-Managed Sessions',
+      desc: 'A random session token is stored only as a hash in MySQL, expires after 12 hours, and is revoked on sign-out.',
       icon: ShieldCheck,
-      tag: 'Device Security',
+      tag: 'HTTP-only Cookie',
     },
     {
-      title: 'Rate-Limiting & Adaptive Shield',
-      desc: 'Progressive backoff delays and distributed token buckets prevent brute-force attacks on sign-in and password reset endpoints.',
+      title: 'Authentication Rate Limiting',
+      desc: 'Signup and sign-in endpoints allow up to 10 attempts per 15 minutes per client IP.',
       icon: Server,
       tag: 'Network Defense',
     },
@@ -64,7 +64,7 @@ export const SecuritySpecsModal: React.FC<SecuritySpecsModalProps> = ({
           Secure Authentication Architecture
         </h3>
         <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-          Designed with zero-trust principles: end-to-end TLS 1.3 encryption, privacy-preserving token exchange, and defense-in-depth credential protection.
+          This local Docker stack uses hashed passwords and server-managed sessions. Configure HTTPS and set SESSION_COOKIE_SECURE=true before exposing it beyond localhost.
         </p>
 
         <div className="space-y-3.5">
@@ -97,7 +97,7 @@ export const SecuritySpecsModal: React.FC<SecuritySpecsModalProps> = ({
         </div>
 
         <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span>Compliant with NIST SP 800-63B Authentication Guidelines</span>
+          <span>Security controls shown reflect the current local implementation.</span>
           <button
             type="button"
             onClick={onClose}

@@ -4,6 +4,7 @@ export interface UserSession {
   fullName: string;
   email: string;
   phone?: string;
+  city?: string;
   coffeeBeans: number;
   memberTier: string;
   preferredBrew: string;

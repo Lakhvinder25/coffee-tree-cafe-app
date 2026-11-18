@@ -19,18 +19,28 @@ View your app in AI Studio: https://ai.studio/apps/22e579ec-c7a2-4301-a975-82f23
 3. Run the app:
    `npm run dev`
 
-## Run with Docker
+## Run with Docker Compose
 
-Build the production image:
-
-```bash
-docker build -t coffee-tree-cafe .
-```
-
-Start the app:
+Copy [.env.example](./.env.example) to `.env`, then set `MYSQL_PASSWORD` and
+`MYSQL_ROOT_PASSWORD` to different strong passwords. The `.env` file is ignored
+by Git and must not be committed.
 
 ```bash
-docker run --rm -p 8080:80 coffee-tree-cafe
+docker compose up --build -d
 ```
 
-Open http://localhost:8080.
+Open http://localhost:8080. The web app, auth API, and MySQL run together on a
+private Docker network; MySQL is not published to the host. User records are
+kept in the `coffee-tree-cafe-mysql-data` volume. Stop the services without
+deleting stored data with:
+
+```bash
+docker compose down
+```
+
+Signup requires a name, email, password, and city; phone is optional. Passwords
+are stored as salted scrypt hashes, and the API issues revocable, HTTP-only
+session cookies. Set `SESSION_COOKIE_SECURE=true` when serving through HTTPS.
+
+For Vite development, keep the Compose API running and use `npm run dev`; Vite
+proxies `/api` requests to `localhost:3001`.

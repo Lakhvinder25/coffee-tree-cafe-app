@@ -3,6 +3,7 @@ import { Mail, Lock, Eye, EyeOff, ShieldCheck, Coffee, Gift, ArrowRight } from '
 import { CoffeeTreeLogo } from './CoffeeTreeLogo';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { UserSession } from '../types/auth';
+import { loginAccount, toUserSession } from '../services/auth';
 
 interface LoginScreenProps {
   onSwitchToSignUp: () => void;
@@ -19,22 +20,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onOpenSecuritySpecs,
   showToast,
 }) => {
-  const [email, setEmail] = useState('barista@coffeetree.com');
-  const [password, setPassword] = useState('VelvetRoast2026!#');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberDevice, setRememberDevice] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { email?: string; password?: string } = {};
 
-    if (!email || !email.includes('@')) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       newErrors.email = 'Please provide a valid account email';
     }
-    if (!password || password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    if (!password) {
+      newErrors.password = 'Please enter your password';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -45,35 +45,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     setErrors({});
     setIsSubmitting(true);
-
-    setTimeout(() => {
+    try {
+      const user = await loginAccount(email, password);
+      showToast(`Welcome back, ${user.fullName.split(' ')[0]}! Order ahead unlocked.`, 'success');
+      onLoginSuccess(toUserSession(user));
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not sign in.', 'error');
+    } finally {
       setIsSubmitting(false);
-      showToast('Welcome back, Sophia! Order ahead unlocked.', 'success');
-      onLoginSuccess({
-        fullName: 'Sophia Martinez',
-        email: email,
-        coffeeBeans: 140,
-        memberTier: 'Master Roaster Reserve',
-        preferredBrew: 'Oat Milk Flat White',
-        joinedDate: 'Oct 2023',
-      });
-    }, 600);
+    }
   };
 
   const handleSocialAuth = (provider: 'Google' | 'Apple') => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      showToast(`Authenticated seamlessly with ${provider}!`, 'success');
-      onLoginSuccess({
-        fullName: provider === 'Google' ? 'Sophia Martinez' : 'S. Martinez (Apple ID)',
-        email: email || 'member@coffeetree.com',
-        coffeeBeans: 150,
-        memberTier: 'Master Roaster Reserve',
-        preferredBrew: 'Pour Over Gesha',
-        joinedDate: 'March 2024',
-      });
-    }, 700);
+    showToast(`${provider} sign-in is not configured. Please use email and password.`, 'info');
   };
 
   return (
@@ -109,6 +93,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="barista@coffeetree.com"
+                autoComplete="email"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a3827] focus:border-transparent transition-all shadow-2xs"
                 required
               />
@@ -139,6 +124,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••••••••••••••"
+                autoComplete="current-password"
                 className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a3827] focus:border-transparent transition-all tracking-wider shadow-2xs"
                 required
               />
@@ -156,17 +142,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             )}
           </div>
 
-          {/* Remember Me & Secure Badge */}
+          {/* Session Details & Secure Badge */}
           <div className="flex items-center justify-between text-xs pt-0.5">
-            <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600">
-              <input
-                type="checkbox"
-                checked={rememberDevice}
-                onChange={(e) => setRememberDevice(e.target.checked)}
-                className="w-4 h-4 rounded text-[#1a3827] focus:ring-[#1a3827] border-slate-300 accent-[#1a3827] cursor-pointer"
-              />
-              <span className="font-medium">Remember this device</span>
-            </label>
+            <span className="font-medium text-slate-600">12-hour secure session</span>
 
             <button
               type="button"

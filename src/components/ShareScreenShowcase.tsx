@@ -235,19 +235,19 @@ export const ShareScreenShowcase: React.FC<ShareScreenShowcaseProps> = ({
               <div className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <strong className="text-slate-900 font-semibold">Roast-Tier Entropy:</strong> Live client-side password entropy scoring mapped to specialty coffee roasting stages.
+                  <strong className="text-slate-900 font-semibold">Password Guidance:</strong> A client-side strength indicator is paired with server-side minimum length validation.
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <strong className="text-slate-900 font-semibold">Device Trust & Session Pinning:</strong> "Remember this device" securely provisions encrypted client session tokens.
+                  <strong className="text-slate-900 font-semibold">Server Sessions:</strong> HTTP-only session cookies are backed by revocable, hashed tokens in MySQL.
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <strong className="text-slate-900 font-semibold">OAuth 2.0 & Apple ID Shield:</strong> Authenticates via cryptographic OpenID tokens without leaking third-party trackers.
+                  <strong className="text-slate-900 font-semibold">Rate-Limited Sign-In:</strong> Email/password signup and login endpoints are rate limited; external OAuth providers are not configured.
                 </div>
               </div>
             </div>

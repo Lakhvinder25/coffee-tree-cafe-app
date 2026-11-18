@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenView, UserSession } from './types/auth';
 import { LoginScreen } from './components/LoginScreen';
 import { SignUpScreen } from './components/SignUpScreen';
@@ -15,10 +15,12 @@ import { SecuritySpecsModal } from './components/SecuritySpecsModal';
 import { TermsModal } from './components/TermsModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { Coffee, Shield, Sparkles, Layers, LogIn, UserPlus } from 'lucide-react';
+import { getCurrentUser, logoutAccount, toUserSession } from './services/auth';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ScreenView>('login');
   const [session, setSession] = useState<UserSession | null>(null);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
 
   // Modals state
   const [isForgotOpen, setIsForgotOpen] = useState(false);
@@ -29,13 +31,38 @@ export default function App() {
   // Toasts state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = useCallback((text: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 6);
     setToasts((prev) => [...prev, { id, text, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
-  };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getCurrentUser()
+      .then((user) => {
+        if (active && user) {
+          setSession(toUserSession(user));
+          setCurrentView('member');
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          showToast(error instanceof Error ? error.message : 'Could not restore your session.', 'error');
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsRestoringSession(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [showToast]);
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -51,10 +78,15 @@ export default function App() {
     setCurrentView('member');
   };
 
-  const handleSignOut = () => {
-    setSession(null);
-    setCurrentView('login');
-    showToast('Signed out safely. Device session cleared.', 'info');
+  const handleSignOut = async () => {
+    try {
+      await logoutAccount();
+      setSession(null);
+      setCurrentView('login');
+      showToast('Signed out safely. Device session cleared.', 'info');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not sign out.', 'error');
+    }
   };
 
   return (
@@ -162,7 +194,9 @@ export default function App() {
 
       {/* Main View Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 md:py-10 flex flex-col items-center justify-center">
-        {currentView === 'login' && (
+        {isRestoringSession ? (
+          <p role="status" className="text-sm text-slate-500">Checking your account...</p>
+        ) : currentView === 'login' ? (
           <div className="w-full animate-in fade-in duration-300">
             <LoginScreen
               onSwitchToSignUp={() => setCurrentView('signup')}
@@ -172,9 +206,9 @@ export default function App() {
               showToast={showToast}
             />
           </div>
-        )}
+        ) : null}
 
-        {currentView === 'signup' && (
+        {!isRestoringSession && currentView === 'signup' && (
           <div className="w-full animate-in fade-in duration-300">
             <SignUpScreen
               onSwitchToLogin={() => setCurrentView('login')}
@@ -186,7 +220,7 @@ export default function App() {
           </div>
         )}
 
-        {currentView === 'showcase' && (
+        {!isRestoringSession && currentView === 'showcase' && (
           <div className="w-full animate-in fade-in duration-300">
             <ShareScreenShowcase
               onSelectScreen={(view) => setCurrentView(view)}
@@ -195,7 +229,7 @@ export default function App() {
           </div>
         )}
 
-        {currentView === 'member' && session && (
+        {!isRestoringSession && currentView === 'member' && session && (
           <div className="w-full animate-in fade-in duration-300">
             <MemberDashboard
               user={session}

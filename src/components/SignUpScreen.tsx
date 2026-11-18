@@ -1,8 +1,9 @@
 import React, { useState, useId } from 'react';
-import { Mail, Eye, EyeOff, User, MessageSquare, ArrowRight, ChevronRight } from 'lucide-react';
+import { Mail, Eye, EyeOff, User, MessageSquare, MapPin, ArrowRight, ChevronRight } from 'lucide-react';
 import { CoffeeTreeLogo } from './CoffeeTreeLogo';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { UserSession } from '../types/auth';
+import { registerAccount, toUserSession } from '../services/auth';
 
 interface SignUpScreenProps {
   onSwitchToLogin: () => void;
@@ -19,15 +20,16 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
   onOpenTerms,
   showToast,
 }) => {
-  const [fullName, setFullName] = useState('Sophia Martinez');
-  const [email, setEmail] = useState('sophia@example.com');
-  const [phone, setPhone] = useState('(555) 432-8765');
-  const [password, setPassword] = useState('HeirloomTimberRoast2026!');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [newsletterConsent, setNewsletterConsent] = useState(true);
-  const [termsAccepted, setTermsAccepted] = useState(true);
+  const [newsletterConsent, setNewsletterConsent] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ fullName?: string; email?: string; terms?: string }>({});
+  const [errors, setErrors] = useState<{ fullName?: string; email?: string; city?: string; terms?: string }>({});
 
   const newsletterConsentId = useId();
   const termsAcceptedId = useId();
@@ -65,15 +67,18 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 
   const roastSecurity = getRoastSecurity(password);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: { fullName?: string; email?: string; terms?: string } = {};
+    const newErrors: { fullName?: string; email?: string; city?: string; terms?: string } = {};
 
     if (!fullName.trim()) {
       newErrors.fullName = 'Please enter your full name';
     }
-    if (!email || !email.includes('@')) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       newErrors.email = 'Please provide a valid email';
+    }
+    if (!city.trim()) {
+      newErrors.city = 'Please enter your city';
     }
     if (!termsAccepted) {
       newErrors.terms = 'Please accept the Terms and Privacy Policy';
@@ -87,37 +92,19 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
 
     setErrors({});
     setIsSubmitting(true);
-
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const user = await registerAccount({ fullName, email, phone, city, password });
       showToast('Welcome to Coffee Tree! Account registered.', 'success');
-      onSignUpSuccess({
-        fullName,
-        email,
-        phone,
-        coffeeBeans: 25, // bonus signup reward beans!
-        memberTier: 'Inaugural Craft Member',
-        preferredBrew: 'House Specialty',
-        joinedDate: 'Today',
-      });
-    }, 700);
+      onSignUpSuccess(toUserSession(user));
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not create your account.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSocialAuth = (provider: 'Google' | 'Apple') => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      showToast(`Account registered via ${provider}!`, 'success');
-      onSignUpSuccess({
-        fullName: provider === 'Google' ? fullName || 'Sophia Martinez' : 'Sophia Martinez',
-        email: email || 'sophia@example.com',
-        phone: phone,
-        coffeeBeans: 25,
-        memberTier: 'Inaugural Craft Member',
-        preferredBrew: 'House Specialty',
-        joinedDate: 'Today',
-      });
-    }, 700);
+    showToast(`${provider} sign-in is not configured. Please use email and password.`, 'info');
   };
 
   return (
@@ -235,6 +222,31 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
             </div>
           </div>
 
+          {/* City */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              City
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Your city"
+                autoComplete="address-level2"
+                maxLength={100}
+                className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a3827] focus:border-transparent transition-all shadow-2xs"
+                required
+              />
+              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                <MapPin className="w-4 h-4" />
+              </div>
+            </div>
+            {errors.city && (
+              <p className="text-[11px] text-red-600 mt-1 font-medium">{errors.city}</p>
+            )}
+          </div>
+
           {/* Password */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -246,6 +258,9 @@ export const SignUpScreen: React.FC<SignUpScreenProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••••••••••••••"
+                autoComplete="new-password"
+                minLength={8}
+                maxLength={128}
                 className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a3827] focus:border-transparent transition-all tracking-wider shadow-2xs"
                 required
               />
