@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, Coffee, Gift, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Coffee, ArrowRight } from 'lucide-react';
 import { CoffeeTreeLogo } from './CoffeeTreeLogo';
-import { SocialAuthButtons } from './SocialAuthButtons';
 import { UserSession } from '../types/auth';
 import { loginAccount, toUserSession } from '../services/auth';
 
@@ -17,7 +16,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onSwitchToSignUp,
   onLoginSuccess,
   onForgotPassword,
-  onOpenSecuritySpecs,
   showToast,
 }) => {
   const [email, setEmail] = useState('');
@@ -54,10 +52,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSocialAuth = (provider: 'Google' | 'Apple') => {
-    showToast(`${provider} sign-in is not configured. Please use email and password.`, 'info');
   };
 
   return (
@@ -142,21 +136,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             )}
           </div>
 
-          {/* Session Details & Secure Badge */}
-          <div className="flex items-center justify-between text-xs pt-0.5">
-            <span className="font-medium text-slate-600">12-hour secure session</span>
-
-            <button
-              type="button"
-              onClick={onOpenSecuritySpecs}
-              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[11px] font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
-              title="View authentication security specifications"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Secure</span>
-            </button>
-          </div>
-
           {/* Primary CTA */}
           <button
             type="submit"
@@ -168,40 +147,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <ArrowRight className="w-4 h-4 ml-0.5" />
           </button>
 
-          {/* Divider */}
-          <div className="relative my-4 flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative px-3 bg-white text-[10px] tracking-wider font-semibold text-slate-400 uppercase">
-              Or continue with
-            </div>
-          </div>
-
-          {/* Social Buttons */}
-          <SocialAuthButtons
-            onGoogleClick={() => handleSocialAuth('Google')}
-            onAppleClick={() => handleSocialAuth('Apple')}
-            isLoading={isSubmitting}
-          />
-
-          {/* Member Perk Card */}
-          <div className="p-3 rounded-2xl bg-[#edf5ef] border border-emerald-200/70 flex items-center justify-between gap-3 text-slate-700 mt-4 shadow-2xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white border border-emerald-200 flex items-center justify-center text-emerald-700 shadow-2xs shrink-0">
-                <Coffee className="w-4 h-4 text-[#1a3827]" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-wider uppercase text-emerald-900">
-                  Member Benefit <span className="font-normal text-emerald-700">· Daily Perk</span>
-                </div>
-                <div className="text-xs text-slate-600 font-medium">
-                  Earn 10 Coffee Beans with your first online order today.
-                </div>
-              </div>
-            </div>
-            <Gift className="w-4 h-4 text-emerald-700 shrink-0 mr-1" />
-          </div>
         </form>
       </div>
 
@@ -215,6 +160,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         >
           Create an account / Sign Up
         </button>
+        <p className="mt-3 text-slate-400">Coffee Tree Cafe · Owned by Lakhvinder</p>
       </div>
     </div>
   );
